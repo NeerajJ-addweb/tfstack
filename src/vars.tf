@@ -15,3 +15,18 @@ variable "public_subnet_cidr" {
 variable "private_subnet_cidr" {
     type = list(string)
 }
+variable "serviceBaseName" {
+    type = string
+}
+variable "registryUrl" {
+    type = string
+}
+variable "cpu" {
+    type = string
+}
+variable "memory" {
+    type = string
+}
+variable "root_domain" {
+    type = string
+}

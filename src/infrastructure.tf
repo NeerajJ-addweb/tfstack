@@ -202,3 +202,49 @@ resource "aws_network_acl" "main" {
 resource "aws_ecs_cluster" "ecs" {
   name = "${var.EnvironmentName}-Cluster"
 }
+
+//LoadBalancer For ECS Services
+resource "aws_security_group" "lb_sg" {
+  name        = "allow_http/s"
+  description = "Allow TLS and non TLS inbound traffic"
+  vpc_id      = aws_vpc.main.id
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+
+  }
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.EnvironmentName} - LoadBalancer SG"
+  }
+}
+resource "aws_lb" "loadbalancer" {
+  name               = "${var.EnvironmentName}-lb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.lb_sg.id]
+  subnets            = [aws_subnet.public_subnet_1.id,aws_subnet.public_subnet_2.id]
+
+  enable_deletion_protection = true
+
+
+
+  tags = {
+    Environment = "${var.EnvironmentName}"
+  }
+}
