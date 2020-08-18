@@ -30,3 +30,7 @@ variable "memory" {
 variable "root_domain" {
     type = string
 }
+variable "subnet_count" {
+  description = "List of 8-bit numbers of subnets of base_cidr_block that should be granted access."
+  default = [1, 2]
+}

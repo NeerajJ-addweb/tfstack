@@ -1,9 +1,11 @@
-module "mongo-task-definition" {
+#Service Deployment
+module "ecs-task-definition" {
   source = "github.com/mongodb/terraform-aws-ecs-task-definition"
   network_mode = "awsvpc"
   family = "${var.serviceBaseName}Service-task"
   //image  = "${var.registryUrl}/ca-${serviceBasename}:latest"
-  image = "${var.registryUrl}/basehealthimage:latest"
+  # image = "${var.registryUrl}/basehealthimage:latest"
+  image = "nginx"
   memory = var.memory
   cpu = var.cpu
   requires_compatibilities = [
@@ -16,6 +18,29 @@ module "mongo-task-definition" {
       containerPort = 80
     },
   ]
+  tags = {
+    Environment = "${var.EnvironmentName}"
+  }
+}
+resource "aws_ecs_service" "nginx" {
+  name            = "nginx"
+  cluster         = aws_ecs_cluster.ecs.id
+  task_definition = module.ecs-task-definition.arn
+  desired_count   = 1
+  launch_type = "FARGATE"
+  health_check_grace_period_seconds = 60
+  load_balancer {
+    target_group_arn = aws_lb_target_group.lb_tg.arn
+    container_name   = var.serviceBaseName
+    container_port   = 80
+  }
+
+  network_configuration {
+    subnets = [aws_subnet.public_subnet_1.id,aws_subnet.public_subnet_2.id]
+    security_groups = [aws_security_group.lb_sg.id]
+    assign_public_ip = true
+  }
+  depends_on = [aws_lb_listener_rule.base]
 }
 resource "aws_lb_target_group" "lb_tg" {
   name        = "${var.serviceBaseName}-${var.EnvironmentName}-tg"
@@ -24,18 +49,25 @@ resource "aws_lb_target_group" "lb_tg" {
   target_type = "ip"
   vpc_id      = aws_vpc.main.id
   health_check {
-    interval = 35
-    path = "/healthcheck.php"
+    interval = 300
+    # path = "/healthcheck.php"
+    path = "/"
     protocol = "HTTP"
-    timeout = 30
+    timeout = 120
     matcher = "200,202"
     healthy_threshold = 2
     unhealthy_threshold = 2
   }
-  tags
-  {
-    
+  tags = {
+    Environment = "${var.EnvironmentName}"
   }
+}
+
+
+# Service Networking
+data "aws_route53_zone" "selected" {
+  name         = "${var.root_domain}."
+  private_zone = false
 }
 resource "aws_lb_listener" "alb_listener" {
   load_balancer_arn = aws_lb.loadbalancer.arn
@@ -46,6 +78,7 @@ resource "aws_lb_listener" "alb_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.lb_tg.arn
   }
+  
 }
 resource "aws_lb_listener_rule" "base" {
   listener_arn = aws_lb_listener.alb_listener.arn
@@ -67,4 +100,11 @@ resource "aws_lb_listener_rule" "base" {
       values = ["${var.serviceBaseName}.${var.root_domain}"]
     }
   }
+}
+resource "aws_route53_record" "web" {
+  zone_id = data.aws_route53_zone.selected.zone_id
+  name    = "${var.serviceBaseName}.${var.root_domain}"
+  type    = "CNAME"
+  ttl     = "300"
+  records = [aws_lb.loadbalancer.dns_name]
 }

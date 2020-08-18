@@ -1,3 +1,6 @@
+data "aws_availability_zones" "available" {
+  state = "available"
+}
 resource "aws_vpc" "main" {
   cidr_block       = var.VpcCIDR
   instance_tenancy = "default"
@@ -18,6 +21,7 @@ resource "aws_subnet" "public_subnet_1" {
   vpc_id     = aws_vpc.main.id
   cidr_block = var.public_subnet_cidr[0]
   map_public_ip_on_launch = true
+  availability_zone = data.aws_availability_zones.available.names[0]
   tags = {
     Name = var.EnvironmentName
   }
@@ -26,6 +30,7 @@ resource "aws_subnet" "public_subnet_2" {
   vpc_id     = aws_vpc.main.id
   cidr_block = var.public_subnet_cidr[1]
   map_public_ip_on_launch = true
+  availability_zone = data.aws_availability_zones.available.names[1]
   tags = {
     Name = var.EnvironmentName
   }
@@ -34,6 +39,7 @@ resource "aws_subnet" "private_subnet_1" {
   vpc_id     = aws_vpc.main.id
   cidr_block = var.private_subnet_cidr[0]
   map_public_ip_on_launch = false
+  availability_zone = data.aws_availability_zones.available.names[0]
   tags = {
     Name = var.EnvironmentName
   }
@@ -42,6 +48,7 @@ resource "aws_subnet" "private_subnet_2" {
   vpc_id     = aws_vpc.main.id
   cidr_block = var.private_subnet_cidr[1]
   map_public_ip_on_launch = false
+  availability_zone = data.aws_availability_zones.available.names[1]
   tags = {
     Name = var.EnvironmentName
   }
@@ -239,10 +246,6 @@ resource "aws_lb" "loadbalancer" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.lb_sg.id]
   subnets            = [aws_subnet.public_subnet_1.id,aws_subnet.public_subnet_2.id]
-
-  enable_deletion_protection = true
-
-
 
   tags = {
     Environment = "${var.EnvironmentName}"

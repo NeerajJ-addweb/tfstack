@@ -41,7 +41,8 @@ resource "aws_iam_role_policy" "ecsTaskExecutionRole" {
                     "ecr:GetDownloadUrlForLayer",
                     "ecr:BatchGetImage",
                     "logs:CreateLogStream",
-                    "logs:PutLogEvents"
+                    "logs:PutLogEvents",
+                    "ec2:*"
                 ],
                 "Resource": "*"
             }
@@ -60,7 +61,10 @@ resource "aws_iam_role" "ecsTaskExecutionRole" {
     {
       "Action": "sts:AssumeRole",
       "Principal": {
-        "Service": "ec2.amazonaws.com"
+        "Service": [
+          "ecs.amazonaws.com",
+          "ecs-tasks.amazonaws.com"
+          ]
       },
       "Effect": "Allow",
       "Sid": ""
