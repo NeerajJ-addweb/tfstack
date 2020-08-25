@@ -267,7 +267,7 @@ resource "aws_lb_listener" "alb_listener" {
 
     fixed_response {
       content_type = "text/plain"
-      message_body = "Fixed response content"
+      message_body = "User Service:     ${module.user.service-endpoint}\r\nContent Service : ${module.content.service-endpoint}"
       status_code  = "200"
     }
   }
