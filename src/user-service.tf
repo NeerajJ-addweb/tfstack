@@ -6,7 +6,6 @@ module "user" {
   # image = "${var.registryUrl}/basehealthimage:latest"
   image = "paulbouwer/hello-kubernetes:1.8"
   vpc_id = aws_vpc.main.id
-  load_balancer_arn = aws_lb.loadbalancer.arn
   lb_dns_name = aws_lb.loadbalancer.dns_name
   root_domain = var.root_domain
   tg_http_port = 80
@@ -15,7 +14,9 @@ module "user" {
   desired_count = 1
   security_groups = [aws_security_group.lb_sg.id]
   subnets = [aws_subnet.public_subnet_1.id,aws_subnet.public_subnet_2.id]
+  listener_arn_http = aws_lb_listener.alb_listener.arn
 
+  listener_rule_priority = 99
   environment = [
     {
       "Name" = "MESSAGE"

@@ -235,20 +235,10 @@ data "aws_route53_zone" "selected" {
   name         = "${var.root_domain}."
   private_zone = false
 }
-resource "aws_lb_listener" "alb_listener" {
-  load_balancer_arn = var.load_balancer_arn
-  port              = "80"
-  protocol          = "HTTP"
 
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.lb_tg.arn
-  }
-  
-}
 resource "aws_lb_listener_rule" "base" {
-  listener_arn = aws_lb_listener.alb_listener.arn
-  priority     = 100
+  listener_arn = var.listener_arn_http
+  priority     = var.listener_rule_priority
 
   action {
     type             = "forward"

@@ -274,10 +274,6 @@ variable "lb_dns_name" {
   default = ""
   description = "LoadBalancer DNS name for Creating CNAME Record"
 }
-variable "load_balancer_arn" {
-  default = ""
-  description = "LoadBalancer ARN name for Creating Listener Rule for Service"
-}
 variable "subnets" {
   default = ""
   description = "List of Public Subnet ids"
@@ -297,4 +293,12 @@ variable "cluster" {
 variable "container_port" {
   default = ""
   description = "Container Port for Service"
+}
+variable "listener_arn_http" {
+  default = ""
+  description = "arn of lb listener"
+}
+variable "listener_rule_priority" {
+  default = ""
+  description = "priority for the loadbalancer listener rule"
 }
