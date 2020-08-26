@@ -34,3 +34,7 @@ variable "subnet_count" {
   description = "List of 8-bit numbers of subnets of base_cidr_block that should be granted access."
   default = [1, 2]
 }
+variable "service_names"{
+    type = map(string)
+    default = {}
+}

@@ -18,6 +18,6 @@ output "revision" {
   value       = join("", aws_ecs_task_definition.ecs_task_definition.*.revision)
 }
 
-output "service-endpoint" {
-  value = "${var.name}.${var.root_domain}"
+output "dns" {
+  value = aws_route53_record.web.name
 }

@@ -1,7 +1,8 @@
-module "user" {
+module "services" {
   source = "../modules/service"
+  for_each = var.service_names
   network_mode = "awsvpc"
-  family = "user-Service-task"
+  family = "${each.key}-Service-task"
   //image  = "${var.registryUrl}/ca-${serviceBasename}:latest"
   # image = "${var.registryUrl}/basehealthimage:latest"
   image = "paulbouwer/hello-kubernetes:1.8"
@@ -16,11 +17,11 @@ module "user" {
   subnets = [aws_subnet.public_subnet_1.id,aws_subnet.public_subnet_2.id]
   listener_arn_http = aws_lb_listener.alb_listener.arn
 
-  listener_rule_priority = 99
+  listener_rule_priority = each.value
   environment = [
     {
       "Name" = "MESSAGE"
-      "Value" = "user"
+      "Value" = each.key
     },
   ]
   memory = var.memory
@@ -28,7 +29,7 @@ module "user" {
   requires_compatibilities = [
     "FARGATE",
   ]
-  name   = "user"
+  name   = each.key
   execution_role_arn = aws_iam_role.ecsTaskExecutionRole.arn
   portMappings = [
     {
@@ -39,6 +40,4 @@ module "user" {
     Environment = "${var.EnvironmentName}"
   }
 }
-output "user-endpoint" {
-  value = module.user.service-endpoint
-}
+

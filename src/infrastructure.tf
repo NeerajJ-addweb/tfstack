@@ -12,7 +12,6 @@ resource "aws_vpc" "main" {
 }
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
-
   tags = {
     Name = var.EnvironmentName
   }
@@ -258,6 +257,7 @@ resource "aws_lb" "loadbalancer" {
     Environment = "${var.EnvironmentName}"
   }
 }
+
 resource "aws_lb_listener" "alb_listener" {
   load_balancer_arn = aws_lb.loadbalancer.arn
   port              = "80"
@@ -267,7 +267,7 @@ resource "aws_lb_listener" "alb_listener" {
 
     fixed_response {
       content_type = "text/plain"
-      message_body = "User Service:     ${module.user.service-endpoint}\r\nContent Service : ${module.content.service-endpoint}"
+      message_body = "Hello"
       status_code  = "200"
     }
   }
